@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Books</title>
+    <style>
+        table,th,td {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h1>Book List</h1>
+    <div id="booktable"></div>
+    <form action="/bookreg" method="GET">
+        <input type="submit" value="Book Registraion">
+    </form>
+    <form action="/bookdel" method="GET">
+        <input type="submit" value="Book Deletion">
+    </form>
+    <form action="/adminhome" method="GET">
+        <input type="submit" value="Return">
+    </form>
+    <script>
+        let option = {
+                method:"POST",
+                body:""
+            };
+        fetch("/adminbook",option).then(res => res.json()).then((data)=>{
+            let resdat = JSON.parse(data.data);
+            if(data.status === "true"){
+                    let table = "Books\n<table>\n<tr><th>Book Id</th><th>Name</th><th>Author</th><th>Publisher</th><th>Max Qty</th><th>Availability</th><th>Users</th></tr>\n";
+                    for(let i=0;i<resdat.length;i++){
+                        table += "<tr><td>"+resdat[i].bid+"</td><td>"+resdat[i].name+"</td><td>"+resdat[i].author+"</td><td>"+resdat[i].publisher+"</td><td>"+resdat[i].maxqty+"</td><td>"+resdat[i].avail+"</td><td>"+resdat[i].users.replace(";",",")+"</td></tr>";
+                    }
+                    table += "</table>"
+                    document.getElementById("booktable").innerHTML = table;
+                }
+                else{
+                    document.getElementById("booktable").innerHTML = "Books not found";
+                }
+        });
+    </script>
+</body>
+</html>

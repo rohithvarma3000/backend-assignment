@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Request</title>
+    <style>
+        table,th,td {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h1>Request Manager</h1>
+    <div id="response"></div>
+    <div id="pendreq"></div>
+    <form action="/adminhome" method="GET">
+        <input type="submit" value="Return">
+    </form>
+    <script>
+        function loadpendreq(){
+        let option = {
+                method:"POST",
+                body:""
+            };
+            fetch("/adminpendreq",option).then(res => res.json()).then((data)=>{
+                let responsedat = JSON.parse(data.data);
+                if(data.status === "true" && responsedat!=0){
+                    let table = "Pending Requests\n<table>\n<tr><th>Request Id</th><th>Username</th><th>Book ID</th><th>Request Type</th><th>Date Time</th><th>Action</th></tr>\n";
+                    for(let i=0;i<responsedat.length;i++){
+                        let dt = new Date(responsedat[i].dt);
+                        dt = dt.toString();
+
+                        table += "<tr><td>"+responsedat[i].reqid+"</td><td>"+responsedat[i].usr+"</td><td>"+responsedat[i].bid+"</td><td>"+responsedat[i].reqtype+"</td><td>"+dt+"</td><td><button onclick='action(`"+responsedat[i].reqid+"A`)'>Approve</button><button onclick='action(`"+responsedat[i].reqid+"D`)'>Deny</button></td></tr>";
+                    }
+                    table += "</table>"
+                    document.getElementById("pendreq").innerHTML = table;
+                }
+                else{
+                    document.getElementById("pendreq").innerHTML = "No Pending Requests";
+                }
+            });
+        }
+
+        function action(str){
+            var reqid = str.substring(0,str.length-1);
+            var action = str[str.length-1];
+            let data = {
+                "reqid":reqid,
+                "action":action 
+            };
+            let datastr = JSON.stringify(data);
+            let option = {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:datastr
+            };
+            fetch("/adminappdeny",option).then(res => res.json()).then((resdat) => {
+                document.getElementById("response").innerHTML = resdat.status;
+                loadpendreq();
+            });
+        }
+        loadpendreq();
+    </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Details Search</title>
+    <style>
+        table,th,td {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h1>User Details Search</h1>
+    <div class="wrapper">
+        <form class="form">
+            <label id="username">
+                <input type="text" name="username">
+            </label>
+            <input type="submit" value="Search">
+        </form>
+    </div>
+    <div id="searchres"></div>
+    <form action="/adminhome" method="GET">
+        <input type="submit" value="Return">
+    </form>
+    <script>
+        const wrapper = document.querySelector(".wrapper");
+        const form = wrapper.querySelectorAll(".form");
+        const submitInput = form[0].querySelector("input[type=submit]");
+        function getDataForm(e){
+            e.preventDefault();
+            var formData = new FormData(form[0]);
+            var usr = formData.get("username");
+            let data = {
+                "username": usr
+            };
+            let datastr = JSON.stringify(data);
+            let option = {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:datastr
+            };
+            fetch("/userdets",option).then(res => res.json()).then((resdat) => {
+                if(resdat.status === "true"){
+                    let table = "Search Results\n<table>\n<tr><th>Username</th><th>Name</th><th>Email</th><th>Phone No</th></tr>\n";
+                    table += "<tr><td>"+resdat.username+"</td><td>"+resdat.name+"</td><td>"+resdat.email+"</td><td>"+resdat.phone+"</td></tr></table>";
+                    document.getElementById("searchres").innerHTML = table;
+                }
+                else{
+                    document.getElementById("searchres").innerHTML = "User not found";
+                }
+            });
+        }
+        document.addEventListener("DOMContentLoaded", () => {
+            submitInput.addEventListener("click", getDataForm,false);
+        },false);
+    </script>
+</body>
+</html>

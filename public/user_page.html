@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Page</title>
+    <style>
+        table,th,td {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        function loadname(){
+        const xhr = new XMLHttpRequest();
+            xhr.open("GET","/username",true);
+            xhr.onload = function(){
+                if(this.status == 200){
+                        let xhrdat = this.responseText;
+                        document.getElementById("name").innerHTML = xhrdat;
+
+                }
+                else{
+                    console.log("Error while retriveing data");
+                }
+            }   
+        xhr.send();
+        }
+
+        function checkout(){
+            let option = {
+                method:"POST",
+                body:""
+            };
+            fetch("/userbookcheckout",option).then(res => res.json()).then((data)=>{
+                
+                if(data.status === "true"){
+                    let responsedat = JSON.parse(data.data);
+                    let table = "Books Checked Out By You\n<table>\n<tr><th>Book Id</th><th>Name</th><th>Author</th><th>Publisher</th><th></th></tr>\n";
+                    for(let i=0;i<responsedat.length;i++){
+                        table += "<tr><td>"+responsedat[i].bid+"</td><td>"+responsedat[i].name+"</td><td>"+responsedat[i].author+"</td><td>"+responsedat[i].publisher+"</td><td><button onclick='action(`"+responsedat[i].bid+"`)'>Checkin Request</button></td></tr>";
+                    }
+                    table += "</table>"
+                    document.getElementById("checkout").innerHTML = table;
+                }
+                else{
+                    document.getElementById("checkout").innerHTML = "No books checked out";
+                }
+            });
+        }
+
+        function action(bid){
+            let data = {
+                "bid": bid,
+                "type":"in"
+            };
+            let datastr = JSON.stringify(data);
+            let option = {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:datastr
+            };
+            fetch("/userrequest",option).then(res => res.json()).then((resdat) => {
+                document.getElementById("reqres").innerHTML = resdat.status;
+                pending();
+            });
+        }
+
+        function pending(){
+            let option = {
+                method:"POST",
+                body:""
+            };
+            fetch("/userpendreq",option).then(res => res.json()).then((data)=>{
+                let responsedat = JSON.parse(data.data);
+                if(data.status === "true" && responsedat!=0){
+                    let table = "Pending Requests\n<table>\n<tr><th>Request Id</th><th>Book ID</th><th>Request Type</th><th>Date Time</th></tr>\n";
+                    for(let i=0;i<responsedat.length;i++){
+                        let dt = new Date(responsedat[i].dt);
+                        dt = dt.toString();
+
+                        table += "<tr><td>"+responsedat[i].reqid+"</td><td>"+responsedat[i].bid+"</td><td>"+responsedat[i].reqtype+"</td><td>"+dt+"</td></tr>";
+                    }
+                    table += "</table>"
+                    document.getElementById("pendreq").innerHTML = table;
+                }
+                else{
+                    document.getElementById("pendreq").innerHTML = "No Pending Requests";
+                }
+            });
+        }
+
+        pending();
+        checkout();
+        loadname();
+    </script>
+    <h1>Welcome <div id="name"></div></h1>
+    <form action="/userbook" method="GET">
+        <input type="submit" value="Book Catalog">
+    </form>
+    <form action="/" method="GET">
+        <input type="submit" value="Logout">
+    </form>
+    <div id="checkout"></div>
+    <div id="reqres"></div>
+    <div id="pendreq"></div>
+
+</body>
+</html>

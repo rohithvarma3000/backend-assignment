@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Books</title>
+    <style>
+        table,th,td {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h1>Book Catalog</h1>
+    <div class="wrapper">
+        <form class="form">
+            <label id="bookname">
+                Search By Name: <input type="text" name="bookname">
+            </label>
+            <input type="submit" value="Search">
+        </form>
+    </div>
+    <div id="searchres"></div>
+    <div id="reqres"></div>
+    <div id="booktable"></div>
+    <form action="/userhome" method="GET">
+        <input type="submit" value="Return">
+    </form>
+    <script>
+        let option = {
+                method:"POST",
+                body:""
+            };
+        fetch("/userbook",option).then(res => res.json()).then((data)=>{
+            let responsedat = JSON.parse(data.data);
+            if(data.status === "true"){
+                    let table = "Books\n<table>\n<tr><th>Book Id</th><th>Name</th><th>Author</th><th>Publisher</th><th>Availability</th><th></th></tr>\n";
+                    for(let i=0;i<responsedat.length;i++){
+                        table += "<tr><td>"+responsedat[i].bid+"</td><td>"+responsedat[i].name+"</td><td>"+responsedat[i].author+"</td><td>"+responsedat[i].publisher+"</td><td>"+responsedat[i].avail+"</td><td><button onclick='action(`"+responsedat[i].bid+"`)'>Checkout Request</button></td></tr>";
+                    }
+                    table += "</table>"
+                    document.getElementById("booktable").innerHTML = table;
+                }
+                else{
+                    document.getElementById("booktable").innerHTML = "Books not found";
+                }
+        });
+
+        function action(bid){
+            console
+            let data = {
+                "bid": bid,
+                "type":"out"
+            };
+            let datastr = JSON.stringify(data);
+            let option = {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:datastr
+            };
+            fetch("/userrequest",option).then(res => res.json()).then((resdat) => {
+                document.getElementById("reqres").innerHTML = resdat.status;
+            });
+        }
+
+        const wrapper = document.querySelector(".wrapper");
+        const form = wrapper.querySelectorAll(".form");
+        const submitInput = form[0].querySelector("input[type=submit]");
+        function getDataForm(e){
+            e.preventDefault();
+            var formData = new FormData(form[0]);
+            var usr = formData.get("bookname");
+            let data = {
+                "bookname": usr
+            };
+            let datastr = JSON.stringify(data);
+            let option = {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:datastr
+            };
+            fetch("/userbooksearch",option).then(res => res.json()).then((data) => {
+                if(data.status === "true"){
+                    let resdat = JSON.parse(data.data);
+                    if(resdat.length == 0){
+                        document.getElementById("searchres").innerHTML = "No Books found";
+                    }
+                    else{
+                    let table = "Search Results\n<table>\n<tr><th>Book Id</th><th>Name</th><th>Author</th><th>Publisher</th><th>Availability</th><th></th></tr>\n";
+                    for(let i=0;i<resdat.length;i++){
+                        table += "<tr><td>"+resdat[i].bid+"</td><td>"+resdat[i].name+"</td><td>"+resdat[i].author+"</td><td>"+resdat[i].publisher+"</td><td>"+resdat[i].avail+"</td><td><button onclick='action(`"+resdat[i].bid+"`)'>Checkout Request</button></td></tr>";
+                    }
+                    table += "</table>"
+                    document.getElementById("searchres").innerHTML = table;
+                }
+                }
+                else{
+                    document.getElementById("searchres").innerHTML = "No Books found";
+                }
+            });
+        }
+        document.addEventListener("DOMContentLoaded", () => {
+            submitInput.addEventListener("click", getDataForm,false);
+        },false);
+    </script>
+</body>
+</html>
