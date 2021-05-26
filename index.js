@@ -15,7 +15,7 @@ const num_pat = /^[0-9]+$/;
 var connection = mysql.createConnection({
     host:"localhost",
     user:"root",
-    password:"Rohith@123",
+    password:"{Enter password here}",
     database:"lib"
 });
 
@@ -92,7 +92,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(session({
     name: "library",
-    secret: "8768537543577738",
+    secret: "{Enter secret here}",
     resave: false,
     saveUninitialized:true,
     cookie:{
@@ -709,7 +709,6 @@ app.post("/adminappdeny",(request,response)=>{
                     connection.query("select * from book where bid= ? and avail>0;",[bid],(err,rows) =>{
                         prevUsers = rows[0].users;
                         avail = rows[0].avail;
-                        console.log(prevUsers);
                         try{
                             if(!err){
                                 bid = rows[0].bid;
